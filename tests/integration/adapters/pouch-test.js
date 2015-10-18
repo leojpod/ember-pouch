@@ -227,7 +227,7 @@ test('can find any bean tacos (query regexp)', function (assert) {
 });
 
 test('create a new record', function (assert) {
-  assert.expect(1);
+  assert.expect(2);
 
   var done = assert.async();
   Ember.RSVP.Promise.resolve().then(() => {
@@ -237,6 +237,11 @@ test('create a new record', function (assert) {
     return db().get('tacoSoup_2_E');
   }).then((newDoc) => {
     assert.equal(newDoc.data.flavor, 'balsamic', 'should have saved the attribute');
+
+    var recordInStore = store().getById('tacoSoup', 'E');
+    assert.equal(newDoc._rev, recordInStore.get('rev'),
+      'should have associated the ember-data record with the rev for the new record');
+
     done();
   }).catch((error) => {
     console.error('error in test', error);
@@ -246,7 +251,7 @@ test('create a new record', function (assert) {
 });
 
 test('update an existing record', function (assert) {
-  assert.expect(1);
+  assert.expect(2);
 
   var done = assert.async();
   Ember.RSVP.Promise.resolve().then(() => {
@@ -263,6 +268,11 @@ test('update an existing record', function (assert) {
     return db().get('tacoSoup_2_C');
   }).then((updatedDoc) => {
     assert.equal(updatedDoc.data.flavor, 'pork', 'should have updated the attribute');
+
+    var recordInStore = store().getById('tacoSoup', 'C');
+    assert.equal(updatedDoc._rev, recordInStore.get('rev'),
+      'should have associated the ember-data record with the updated rev');
+
     done();
   }).catch((error) => {
     console.error('error in test', error);

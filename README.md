@@ -108,6 +108,11 @@ To learn more about how CouchDB sync works, check out [the PouchDB guide to repl
 
 With PouchDB, you also get access to a whole host of [PouchDB plugins](http://pouchdb.com/external.html).
 
+For example, to use the `pouchdb-authentication` plugin, follow the install instructions and import it in your `Brocfile.js`:
+```js
+app.import('bower_components/pouchdb-authentication/dist/pouchdb.authentication.js');
+```
+
 ### Relational Pouch
 
 Ember Pouch is really just a thin layer of Ember-y goodness over [Relational Pouch](https://github.com/nolanlawson/relational-pouch). Before you file an issue, check to see if it's more appropriate to file over there.
@@ -204,10 +209,15 @@ For more information on using ember-cli, visit [http://www.ember-cli.com/](http:
 
 This project was originally based on the [ember-data-hal-adapter](https://github.com/locks/ember-data-hal-adapter) by [@locks](https://github.com/locks), and I really benefited from his guidance during its creation.
 
-And of course thanks to all our wonderful contributors, [here](https://github.com/nolanlawson/ember-pouch/graphs/contributors) and [in Relational Pouch](https://github.com/nolanlawson/relational-pouch/graphs/contributors)! 
+And of course thanks to all our wonderful contributors, [here](https://github.com/nolanlawson/ember-pouch/graphs/contributors) and [in Relational Pouch](https://github.com/nolanlawson/relational-pouch/graphs/contributors)!
 
 ## Changelog
 
+* **2.0.3**
+  - Use Ember.get to reference the PouchDB instance property in the adapter (`db`), allowing it to be injected ([#84](https://github.com/nolanlawson/ember-pouch/issues/84)). Thanks to [@jkleinsc](https://github.com/jkleinsc)!
+  - Indicate to ember-data 1.13+ that reloading individual ember-pouch records is never necessary (due to the change
+    watcher that keeps them up to date as they are modified) ([#79](https://github.com/nolanlawson/ember-pouch/issues/79), [#83](https://github.com/nolanlawson/ember-pouch/issues/83)).
+* **2.0.2** - Use provide `findRecord` for ember-data 1.13 and later thanks to [@OleRoel](https://github.com/OleRoel) ([#72](https://github.com/nolanlawson/ember-pouch/issues/72))
 * **2.0.1** - Fixed [#62](https://github.com/nolanlawson/ember-pouch/issues/62) thanks to [@rsutphin](https://github.com/rsutphin) (deprecated `typekey` in Ember-Data 1.0.0-beta.18)
 * **2.0.0** - Ember CLI support, due to some amazing support by [@fsmanuel](https://github.com/fsmanuel)! Bower and npm support are deprecated now; you are recommended to use Ember CLI instead.
 * **1.2.5** - Last release with regular Bower/npm support via bundle javascript in the `dist/` directory.

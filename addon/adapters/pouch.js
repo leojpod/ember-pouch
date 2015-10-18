@@ -20,8 +20,14 @@ const {
 export default DS.RESTAdapter.extend({
   coalesceFindRequests: true,
 
+  // The change listener ensures that individual records are kept up to date
+  // when the data in the database changes. This makes ember-data 2.0's record
+  // reloading redundant.
+  shouldReloadRecord: function () { return false; },
+  shouldBackgroundReloadRecord: function () { return false; },
+
   _startChangesToStoreListener: on('init', function () {
-    this.changes = this.db.changes({
+    this.changes = this.get('db').changes({
       since: 'now',
       live: true,
       returnDocs: false
@@ -31,9 +37,9 @@ export default DS.RESTAdapter.extend({
   onChange: function (change) {
     // If relational_pouch isn't initialized yet, there can't be any records
     // in the store to update.
-    if (!this.db.rel) { return; }
+    if (!this.get('db').rel) { return; }
 
-    var obj = this.db.rel.parseDocID(change.id);
+    var obj = this.get('db').rel.parseDocID(change.id);
     // skip changes for non-relational_pouch docs. E.g., design docs.
     if (!obj.type || !obj.id || obj.type === '') { return; }
 
@@ -75,7 +81,7 @@ export default DS.RESTAdapter.extend({
   _init: function (store, type) {
     var self = this,
         recordTypeName = this.getRecordTypeName(type);
-    if (!this.db || typeof this.db !== 'object') {
+    if (!this.get('db') || typeof this.get('db') !== 'object') {
       throw new Error('Please set the `db` property on the adapter.');
     }
 
@@ -133,7 +139,7 @@ export default DS.RESTAdapter.extend({
       }
     });
 
-    this.db.setSchema(this._schema);
+    this.get('db').setSchema(this._schema);
   },
 
   _recordToData: function (store, type, record) {
@@ -196,12 +202,12 @@ export default DS.RESTAdapter.extend({
   findAll: function(store, type /*, sinceToken */) {
     // TODO: use sinceToken
     this._init(store, type);
-    return this.db.rel.find(this.getRecordTypeName(type));
+    return this.get('db').rel.find(this.getRecordTypeName(type));
   },
 
   findMany: function(store, type, ids) {
     this._init(store, type);
-    return this.db.rel.find(this.getRecordTypeName(type), ids);
+    return this.get('db').rel.find(this.getRecordTypeName(type), ids);
   },
 
   matchQuery: function (record, query) {
@@ -235,10 +241,21 @@ export default DS.RESTAdapter.extend({
     });
   },
 
+  /**
+   * `find` has been deprecated in ED 1.13 and is replaced by 'new store
+   * methods', see: https://github.com/emberjs/data/pull/3306
+   * We keep the method for backward compatibility and forward calls to
+   * `findRecord`. This can be removed when the library drops support
+   * for deprecated methods.
+  */
   find: function (store, type, id) {
+    return this.findRecord(store, type, id);
+  },
+
+  findRecord: function (store, type, id) {
     this._init(store, type);
     var recordTypeName = this.getRecordTypeName(type);
-    return this.db.rel.find(recordTypeName, id).then(function (payload) {
+    return this.get('db').rel.find(recordTypeName, id).then(function (payload) {
       // Ember Data chokes on empty payload, this function throws
       // an error when the requested data is not found
       if (typeof payload === 'object' && payload !== null) {
@@ -258,19 +275,19 @@ export default DS.RESTAdapter.extend({
   createRecord: function(store, type, record) {
     this._init(store, type);
     var data = this._recordToData(store, type, record);
-    return this.db.rel.save(this.getRecordTypeName(type), data);
+    return this.get('db').rel.save(this.getRecordTypeName(type), data);
   },
 
   updateRecord: function (store, type, record) {
     this._init(store, type);
     var data = this._recordToData(store, type, record);
-    return this.db.rel.save(this.getRecordTypeName(type), data);
+    return this.get('db').rel.save(this.getRecordTypeName(type), data);
   },
 
   deleteRecord: function (store, type, record) {
     this._init(store, type);
     var data = this._recordToData(store, type, record);
-    return this.db.rel.del(this.getRecordTypeName(type), data)
+    return this.get('db').rel.del(this.getRecordTypeName(type), data)
       .then(extractDeleteRecord);
   }
 });
